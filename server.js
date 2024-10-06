@@ -3,12 +3,18 @@ const express = require("express");
 const mongoose = require('mongoose')
 const cors = require("cors");
 const cookieParser = require('cookie-parser')
+const fileUpload = require('express-fileupload')
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser())
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
+app.use(fileUpload({
+  useTempFiles: true,
+  tempFileDir : '/tmp/',
+  limits: { fileSize: 10 * 1024 * 1024 },
+}))
 
 // simple route
 app.get("/", (req, res) => {

@@ -23,13 +23,13 @@ const panggilanSchema = new mongoose.Schema({
         ref: 'JenisPanggilan'
     },
     tgl_kirim: {
-        type: Date
+        type: Object
     },
     nomor_kirim:{
         type: String
     },
     tgl_dilaksanakan: {
-        type: Date
+        type: Object
     },
     hasil_panggilan: {
         type: Schema.Types.ObjectId,
@@ -41,6 +41,9 @@ const panggilanSchema = new mongoose.Schema({
     jurusita: {
         type: Schema.Types.ObjectId,
         ref: 'Jurusita'
+    },
+    edoc: {
+        type: String
     }
 }, {
     timestamps: true
