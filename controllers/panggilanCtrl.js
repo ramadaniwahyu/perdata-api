@@ -49,7 +49,7 @@ class APIfeatures {
 const panggilanCtrl = {
     getData: async (req, res) => {
         try {
-            const features = new APIfeatures(Panggilan.find().populate('jenis_panggilan').populate('hasil_panggilan'), req.query)
+            const features = new APIfeatures(Panggilan.find().populate('jenis_panggilan').populate('hasil_panggilan').populate('jenis_perkara'), req.query)
                 .filtering().sorting().paginating()
 
             const data = await features.query
