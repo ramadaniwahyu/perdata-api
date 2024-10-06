@@ -102,27 +102,26 @@ const panggilanCtrl = {
     },
     upload: async (req, res) => {
         try {
-            // const {id} = req.params.id
             if (!req.files || Object.keys(req.files).length === 0) {
                 return res.status(400).json({ msg: 'No files were uploaded.' })
             } else {
                 const file = req.files.file;
                 const string_arr = file.name.split('.')
                 const ext_type = string_arr[string_arr.length - 1]
-                          
+
                 if (file.mimetype !== 'application/pdf') {
                     removeTmp(file.tempFilePath)
                     return res.status(400).json({ msg: "File format is incorrect. Only PDF is permitted" })
                 }
 
-                const filename = req.params.id+'.'+ext_type
-                
-                const dir = 'panggilan/'+filename
+                const filename = req.params.id + '.' + ext_type
+
+                const dir = 'panggilan/' + filename
                 uploadPath = path.resolve(__dirname, '../uploads/', dir)
-                const result = await Panggilan.findOneAndUpdate({ _id: req.params.id }, {
+                await Panggilan.findOneAndUpdate({ _id: req.params.id }, {
                     edoc: dir
                 })
-                fs.unlink(uploadPath, err=>{})
+                fs.unlink(uploadPath, err => { })
                 file.mv(uploadPath, function (err) {
                     if (err)
                         return res.status(500).send(err);
@@ -130,22 +129,29 @@ const panggilanCtrl = {
                 });
             }
         } catch (err) {
-            return res.status(500).json({ msg: err.message })
+            return res.status(500).json({ msg: 'Internal Server Error' })
         }
     },
     destroy: async (req, res) => {
-        const filename = req.params.id+'.pdf'
-        uploadPath = path.resolve(__dirname, '../uploads/panggilan/', filename)
-        fs.unlink(uploadPath, err=>{
-            if(err.code !== 'ENOENT') throw err;
-            return res.status(200).json({ msg: 'Document is deleted.'})
-        })
+        try {
+            const filename = req.params.id + '.pdf'
+            uploadPath = path.resolve(__dirname, '../uploads/panggilan/', filename)
+            await Panggilan.findOneAndUpdate({ _id: req.params.id }, {
+                edoc: ''
+            })
+            fs.unlink(uploadPath, err => {
+                if (err) throw res.status(500).json({ msg: err.code })
+            })
+            return res.status(200).json({ msg: 'Document is deleted.' })
+        } catch (err) {
+            res.status(500).json({ msg: 'Internal Server Error' })
+        }
     }
 }
 
-const removeTmp = (path) =>{
-    fs.unlink(path, err=>{
-        if(err) throw err;
+const removeTmp = (path) => {
+    fs.unlink(path, err => {
+        if (err) throw err;
     })
 }
 

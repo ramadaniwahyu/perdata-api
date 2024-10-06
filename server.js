@@ -4,6 +4,8 @@ const mongoose = require('mongoose')
 const cors = require("cors");
 const cookieParser = require('cookie-parser')
 const fileUpload = require('express-fileupload')
+const path = require('path')
+
 
 const app = express();
 app.use(express.json());
@@ -20,6 +22,20 @@ app.use(fileUpload({
 app.get("/", (req, res) => {
   res.json({ msg: "Welcome to Backend-API." });
 });
+
+app.get("/file/*", async (req, res) => {
+  const downloadPath = path.resolve(__dirname, './uploads/', req.params[0])
+  res.sendFile(downloadPath, err => {
+    if (err) {
+      if (err.code == 'ENOENT') {
+        res.status(404).send({ msg: 'File not found!' })
+      }
+      else {
+        res.status(500).send({ msg: err.message })
+      }
+    }
+  })
+})
 
 // routes
 app.use('/api', require('./routes/userRouter'))
