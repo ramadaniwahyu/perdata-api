@@ -1,4 +1,5 @@
 const Panggilan = require('../models/panggilanModel')
+const User = require('../models/userModel')
 const fs = require('fs')
 const path = require('path')
 
@@ -31,7 +32,7 @@ class APIfeatures {
             const sortBy = this.queryString.sort.split(',').join(' ')
             this.query = this.query.sort(sortBy)
         } else {
-            this.query = this.query.sort('-createdAt')
+            this.query = this.query.sort('-tgl_kirim')
         }
 
         return this;
@@ -49,15 +50,37 @@ class APIfeatures {
 const panggilanCtrl = {
     getData: async (req, res) => {
         try {
-            const features = new APIfeatures(Panggilan.find().populate('jenis_panggilan').populate('hasil_panggilan').populate('jenis_perkara'), req.query)
-                .filtering().sorting().paginating()
+            const user = await User.findById(req.user.id).select('-password -is_admin -is_active')
+            
+            if (user.role == 1) {
+                const features = new APIfeatures(
+                    Panggilan.find().populate('jenis_panggilan')
+                        .populate('hasil_panggilan')
+                        .populate('jenis_perkara')
+                        .populate('jurusita'), req.query
+                ).filtering().sorting().paginating()
 
-            const data = await features.query
-            res.json({
-                status: 'success',
-                count: data.length,
-                result: data
-            })
+                const data = await features.query
+                res.json({
+                    status: 'success',
+                    count: data.length,
+                    result: data
+                })
+            } else {
+                const features = new APIfeatures(
+                    Panggilan.find({ jurusita: user.pegawai }).populate('jenis_panggilan')
+                        .populate('hasil_panggilan')
+                        .populate('jenis_perkara')
+                        .populate('jurusita'), req.query
+                ).filtering().sorting().paginating()
+
+                const data = await features.query
+                res.json({
+                    status: 'success',
+                    count: data.length,
+                    result: data
+                })
+            }
         } catch (err) {
             return res.status(500).json({ msg: err.message })
         }

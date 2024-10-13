@@ -8,7 +8,17 @@ const fileUpload = require('express-fileupload')
 const app = express();
 app.use(express.json());
 app.use(cookieParser())
-app.use(cors());
+app.use(cors({
+  // origin: 'http://localhost:8031', // Change to your frontend's URL
+  credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+}));
+
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 app.use(express.urlencoded({ extended: true }));
 app.use(fileUpload({
   useTempFiles: true,
@@ -29,6 +39,8 @@ app.use('/api', require('./routes/jenisPerkaraRouter'))
 app.use('/api', require('./routes/hasilPanggilanRouter'))
 app.use('/api', require('./routes/panggilanRouter'))
 app.use('/api', require('./routes/jurusitaRouter'))
+app.use('/api', require('./routes/jabatanRouter'))
+app.use('/api', require('./routes/pegawaiRouter'))
 
 // connect to database MongoDB
 const URI = process.env.MONGODB_URL

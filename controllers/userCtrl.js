@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const userCtrl = {
     getUser: async (req, res) => {
         try {
-            const users = await User.find().select('-password')
+            const users = await User.find().populate('pegawai').select('-password')
 
             res.json({
                 status: 'success',
@@ -18,7 +18,7 @@ const userCtrl = {
     },
     addUser: async (req, res) => {
         try {
-            const { name, email, password } = req.body
+            const { name, email, pegawai, password } = req.body
             const user = await User.findOne({ email })
             if (user) return res.status(400).json({ msg: 'Email is exist.' })
 
@@ -26,7 +26,7 @@ const userCtrl = {
 
             const passwordHash = await bcrypt.hash(password, 10)
             const newUser = new User({
-                name, email, password: passwordHash
+                name, email, pegawai, password: passwordHash
             })
             await newUser.save()
 
@@ -47,7 +47,7 @@ const userCtrl = {
     },
     updateUser: async (req, res) => {
         try {
-            const { name, email, password, role, is_active } = req.body;
+            const { name, email, password, pegawai, role, is_active } = req.body;
 
             if (password && password.length < 6)
                 return res.status(400).json({ msg: "Password's length is minimal 6 characters." })
@@ -56,7 +56,7 @@ const userCtrl = {
             const passwordHash = await bcrypt.hash(password, 10)
 
             await User.findOneAndUpdate({ _id: req.params.id }, {
-                name, email, password: passwordHash, role, is_active
+                name, email, password: passwordHash, pegawai, role, is_active
             }, { new: true })
 
             res.json({ msg: "User has been updated." })
@@ -106,14 +106,16 @@ const userCtrl = {
             res.cookie('refreshtoken', refreshtoken, {
                 httpOnly: true,
                 path: '/api/refresh_token',
+                sameSite: false,
+                // domain: 'pnkabkediri.kieraha.my.id',
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7d
             })
 
             res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
+                // _id: user._id,
+                // name: user.name,
+                // email: user.email,
+                // role: user.role,
                 accesstoken: accesstoken
             })
 
@@ -140,10 +142,6 @@ const userCtrl = {
                 const accesstoken = createAccessToken({ id: user.id })
 
                 res.json({
-                    _id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    is_admin: user.is_admin,
                     accesstoken: accesstoken
                 })
             })

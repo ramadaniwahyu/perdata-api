@@ -40,7 +40,7 @@ const panggilanSchema = new mongoose.Schema({
     },
     jurusita: {
         type: Schema.Types.ObjectId,
-        ref: 'Jurusita'
+        ref: 'Pegawai'
     },
     edoc: {
         type: String
